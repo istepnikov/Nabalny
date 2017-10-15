@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "741993329764",
+    "firebase_url": "https://nabalny-9925a.firebaseio.com",
+    "project_id": "nabalny-9925a",
+    "storage_bucket": "nabalny-9925a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:741993329764:android:1190366be6e000fd",
+        "android_client_info": {
+          "package_name": "space.greenraven.android.nabalny"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "741993329764-fqa32rervdsh5mqq1ksh88sg04qh7dvd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "space.greenraven.android.nabalny",
+            "certificate_hash": "2ff44514013666923174df03ffc1f549d329438e"
+          }
+        },
+        {
+          "client_id": "741993329764-llhf3o5ebc9brcgumdrqsbictn8s54p4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQA5FVfkWqmeW3EXjKqbfuYvu6v-fmBFQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "741993329764-llhf3o5ebc9brcgumdrqsbictn8s54p4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

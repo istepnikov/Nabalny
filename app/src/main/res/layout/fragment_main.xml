@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:showIn="@layout/activity_main"
+        tools:context="space.greenraven.android.nabalny.MainActivityFragment"
+        >
+
+
+    <TextView
+            android:text="@string/vote_text"
+            android:layout_marginTop="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:id="@+id/textView"
+            android:textAlignment="center"/>
+    <LinearLayout
+            android:layout_below="@id/textView"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/buttons_layout">
+        <Button
+                android:text="@string/yes_string"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/button_yes" android:layout_weight="1"/>
+        <Button
+                android:text="@string/no_string"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/button_no" android:layout_weight="1"/>
+        <Button
+                android:text="@string/abstain_string"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/button_abstain" android:layout_weight="1"/>
+    </LinearLayout>
+
+    <com.github.mikephil.charting.charts.PieChart
+            android:id="@+id/chart"
+            android:layout_marginTop="20dp"
+            android:layout_alignTop="@id/buttons_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+</RelativeLayout>
