@@ -26,6 +26,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Scope;
+import space.greenraven.android.nabalny.util.IabHelper;
+import space.greenraven.android.nabalny.util.Inventory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,8 +78,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
         startActivityForResult(signInIntent, RC_SIGN_IN);
 
-        //TODO remove this
-//        refreshChart();
+        //Init billing
+        initBilling();
     }
 
     @Override
@@ -89,6 +91,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
             handleSignInResult(result);
         }
+
+        mHelper.handleActivityResult(requestCode, resultCode, data);
     }
 
     private void handleSignInResult(GoogleSignInResult result) {
@@ -164,7 +168,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         Log.d("Click","onClick");
         switch (v.getId()){
             case R.id.button_yes:
+
                 Log.i("Button:", "Yes");
+                try {
+                    mHelper.launchPurchaseFlow(this, ITEM_SKU,
+                            10001, mPurchaseFinishedListener, tokenHelper.getToken());
+                } catch (IabHelper.IabAsyncInProgressException e) {
+                    e.printStackTrace();
+                }
                 break;
             case R.id.button_no:
                 Log.i("Button:", "No");
@@ -173,5 +184,88 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 Log.i("Button:", "Abstain");
                 break;
         }
+    }
+
+    //Billing part. Should be refactored, probably
+
+    IabHelper mHelper;
+    static final String ITEM_SKU = "space.green-raven.nabalny.vote";
+
+    void initBilling(){
+
+        //get the resource from the google console
+        String base64EncodedPublicKey = getString(R.string.nabalny_public_key);
+
+        mHelper = new IabHelper(this, base64EncodedPublicKey);
+
+        mHelper.startSetup((result) -> {
+            if(!result.isSuccess()){
+                Log.d("Billing:", "setup failed:"+result);
+            } else {
+                Log.d( "Billing", "setup successful");
+            }
+        });
+    }
+
+
+
+    IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListener =
+            (result, purchase) -> {
+                if(result.isFailure()){
+                    Log.e("Billing:", "Purchase Error" + result.getMessage());
+                    return;
+                } else if (purchase.getSku().equals(ITEM_SKU)){
+                    //TODO here is a real purchase happens
+                    ((TextView)findViewById(R.id.textView)).setText("Bought Successfully");
+                    //consume item
+                    try {
+                        //this is where consumptions starts
+                        consumeItem();
+                    } catch (IabHelper.IabAsyncInProgressException e) {
+                        e.printStackTrace();
+                    }
+                }
+            };
+    //this shitty code is required due to google's design flaw
+    public void consumeItem() throws IabHelper.IabAsyncInProgressException {
+        mHelper.queryInventoryAsync(mReceiverInventoryListener);
+    }
+
+
+    IabHelper.QueryInventoryFinishedListener mReceiverInventoryListener =
+            (result, inventory) ->{
+            if(result.isFailure()){
+                //Handle failures
+            } else {
+                consumeFinishedItem(inventory);
+            }
+        };
+    //this code is required due to the google's design flaw
+    public  void consumeFinishedItem(Inventory inventory){
+        try {
+            mHelper.consumeAsync(inventory.getPurchase(ITEM_SKU), mConsumeFinishedListener);
+        } catch (IabHelper.IabAsyncInProgressException e) {
+            e.printStackTrace();
+        }
+    }
+
+    IabHelper.OnConsumeFinishedListener mConsumeFinishedListener =
+            (purchase, result) -> {
+                if(result.isSuccess()){
+                    ((TextView)findViewById(R.id.textView)).setText("Bought successfully");
+                } else {
+                    //handle error
+                }
+            };
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(mHelper != null) try {
+            mHelper.dispose();
+        } catch (IabHelper.IabAsyncInProgressException e) {
+            e.printStackTrace();
+        }
+        mHelper = null;
     }
 }
