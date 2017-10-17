@@ -13,6 +13,8 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import com.anjlab.android.iab.v3.BillingProcessor;
+import com.anjlab.android.iab.v3.TransactionDetails;
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
@@ -32,7 +34,8 @@ import space.greenraven.android.nabalny.util.Inventory;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, View.OnClickListener,
+        BillingProcessor.IBillingHandler{
 
     private static final int RC_SIGN_IN = 9001;
 
@@ -79,12 +82,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         startActivityForResult(signInIntent, RC_SIGN_IN);
 
         //Init billing
-        initBilling();
+        bp = new BillingProcessor(this, getString(R.string.nabalny_public_key), this);
+        if(!bp.isInitialized()){
+            bp.initialize();
+        }
+//       Log("Billing", "Services available:"+BillingProcessor.isIabServiceAvailable(getBaseContext()));
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+
+        if(!bp.handleActivityResult(requestCode, resultCode, data)) {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
 
         // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         if (requestCode == RC_SIGN_IN) {
@@ -92,7 +102,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             handleSignInResult(result);
         }
 
-        mHelper.handleActivityResult(requestCode, resultCode, data);
     }
 
     private void handleSignInResult(GoogleSignInResult result) {
@@ -170,12 +179,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             case R.id.button_yes:
 
                 Log.i("Button:", "Yes");
-                try {
-                    mHelper.launchPurchaseFlow(this, ITEM_SKU,
-                            10001, mPurchaseFinishedListener, tokenHelper.getToken());
-                } catch (IabHelper.IabAsyncInProgressException e) {
-                    e.printStackTrace();
-                }
+                bp.purchase(this, ITEM_SKU, "Yes");
                 break;
             case R.id.button_no:
                 Log.i("Button:", "No");
@@ -187,85 +191,42 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     }
 
     //Billing part. Should be refactored, probably
-
-    IabHelper mHelper;
     static final String ITEM_SKU = "space.green-raven.nabalny.vote";
 
-    void initBilling(){
+    BillingProcessor bp = null;
 
-        //get the resource from the google console
-        String base64EncodedPublicKey = getString(R.string.nabalny_public_key);
 
-        mHelper = new IabHelper(this, base64EncodedPublicKey);
-
-        mHelper.startSetup((result) -> {
-            if(!result.isSuccess()){
-                Log.d("Billing:", "setup failed:"+result);
-            } else {
-                Log.d( "Billing", "setup successful");
-            }
-        });
+    @Override
+    public void onProductPurchased(@NonNull String productId, @Nullable TransactionDetails details) {
+        Log.i("Billing:", "Purchased");
+        bp.consumePurchase(productId);
     }
 
+    @Override
+    public void onPurchaseHistoryRestored() {
 
-
-    IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListener =
-            (result, purchase) -> {
-                if(result.isFailure()){
-                    Log.e("Billing:", "Purchase Error" + result.getMessage());
-                    return;
-                } else if (purchase.getSku().equals(ITEM_SKU)){
-                    //TODO here is a real purchase happens
-                    ((TextView)findViewById(R.id.textView)).setText("Bought Successfully");
-                    //consume item
-                    try {
-                        //this is where consumptions starts
-                        consumeItem();
-                    } catch (IabHelper.IabAsyncInProgressException e) {
-                        e.printStackTrace();
-                    }
-                }
-            };
-    //this shitty code is required due to google's design flaw
-    public void consumeItem() throws IabHelper.IabAsyncInProgressException {
-        mHelper.queryInventoryAsync(mReceiverInventoryListener);
     }
 
-
-    IabHelper.QueryInventoryFinishedListener mReceiverInventoryListener =
-            (result, inventory) ->{
-            if(result.isFailure()){
-                //Handle failures
-            } else {
-                consumeFinishedItem(inventory);
-            }
-        };
-    //this code is required due to the google's design flaw
-    public  void consumeFinishedItem(Inventory inventory){
-        try {
-            mHelper.consumeAsync(inventory.getPurchase(ITEM_SKU), mConsumeFinishedListener);
-        } catch (IabHelper.IabAsyncInProgressException e) {
-            e.printStackTrace();
-        }
+    @Override
+    public void onBillingError(int errorCode, @Nullable Throwable error) {
+        Log.e("Billing:", "Billing Error:"+errorCode);
+        error.printStackTrace();
     }
 
-    IabHelper.OnConsumeFinishedListener mConsumeFinishedListener =
-            (purchase, result) -> {
-                if(result.isSuccess()){
-                    ((TextView)findViewById(R.id.textView)).setText("Bought successfully");
-                } else {
-                    //handle error
-                }
-            };
+    @Override
+    public void onBillingInitialized() {
+
+    }
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
-        if(mHelper != null) try {
-            mHelper.dispose();
-        } catch (IabHelper.IabAsyncInProgressException e) {
-            e.printStackTrace();
+
+        if(bp!=null){
+            bp.release();
         }
-        mHelper = null;
+        super.onDestroy();
+
     }
+
+    //TODO: clean-up all google demo crap from the project
 }

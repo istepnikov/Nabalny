@@ -40,8 +40,8 @@ dependencies {
     compile 'com.google.firebase:firebase-auth:10.0.1'
     compile 'com.github.PhilJay:MPAndroidChart:v3.0.2'
 
-    compile 'com.android.billingclient:billing:1.0'
-
+//    compile 'com.android.billingclient:billing:1.0'
+    compile 'com.anjlab.android.iab.v3:library:1.0.44'
 
     testCompile 'junit:junit:4.12'
 }
