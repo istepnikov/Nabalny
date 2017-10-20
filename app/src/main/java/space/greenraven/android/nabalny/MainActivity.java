@@ -9,9 +9,9 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 import com.anjlab.android.iab.v3.BillingProcessor;
 import com.anjlab.android.iab.v3.TransactionDetails;
@@ -28,8 +28,6 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Scope;
-import space.greenraven.android.nabalny.util.IabHelper;
-import space.greenraven.android.nabalny.util.Inventory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,14 +36,26 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         BillingProcessor.IBillingHandler{
 
     private static final int RC_SIGN_IN = 9001;
+//    private String publicKey;
+    private static final String publicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjIhQ8vDMCxjR/phCRjktuoL7zIHsvmv7CaQ49rJvXgQuKd10qqLKRK3vtMqVIYI/bauTxtJCkUy23GUZLEviW4ql8VexzNZmuPkSuFqjU9dqsBYH+Y4QZP9jhR6qyi6S8rfueXisn96kdnvwDSD9+k+9f+1VlrsKQPeERwt3po1ehVAadTYKt/7cUmW3vLGs4igCOvVxcY01QDBtFuee/IlpbJy28TyVVCIgw1QpuKwHBJfSazHoMbOPNDHCrc9dmcdmcxhAHrELdXS5r5fs0JuXNzjcalRqy21S1Qz/RMh4R2H3opVqwttamemOaxjUUcHCz1v3AWiJx5ZqEBsc+QIDAQAB";
 
     private GoogleApiClient mGoogleApiClient;
 
     AccessTokenHelper tokenHelper = new AccessTokenHelper(this);
 
+    private void showSnackBarMessage(String message){
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        Snackbar.make(fab, message, Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+//        publicKey = getString(R.string.nabalny_public_key);
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -82,7 +92,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         startActivityForResult(signInIntent, RC_SIGN_IN);
 
         //Init billing
-        bp = new BillingProcessor(this, getString(R.string.nabalny_public_key), this);
+        Log.i("Billing public key",publicKey);
+        bp = new BillingProcessor(this, publicKey, this);
         if(!bp.isInitialized()){
             bp.initialize();
         }
@@ -191,7 +202,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     }
 
     //Billing part. Should be refactored, probably
-    static final String ITEM_SKU = "space.green-raven.nabalny.vote";
+    static final String ITEM_SKU = "space.greenraven.nabalny.vote";
+//    static final String ITEM_SKU = "android.test.purchased";
 
     BillingProcessor bp = null;
 
@@ -209,8 +221,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     @Override
     public void onBillingError(int errorCode, @Nullable Throwable error) {
-        Log.e("Billing:", "Billing Error:"+errorCode);
-        error.printStackTrace();
+        Log.e("Billing:", "Billing Error:"+errorCode+" "+error);
+        showSnackBarMessage("Error code:"+errorCode);
     }
 
     @Override
