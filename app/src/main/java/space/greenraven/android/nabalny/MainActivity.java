@@ -28,6 +28,9 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Scope;
+import space.greenraven.android.nabalny.remoting.VoteProcessingService;
+import space.greenraven.android.nabalny.remoting.VoteResultsService;
+import space.greenraven.android.nabalny.remoting.VoteStats;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +46,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     AccessTokenHelper tokenHelper = new AccessTokenHelper(this);
 
+    VoteResultsService voteService = new VoteResultsService(this);
+
+    String currentUser = "";
+
     private void showSnackBarMessage(String message){
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         Snackbar.make(fab, message, Snackbar.LENGTH_LONG)
@@ -54,6 +61,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        PropertyHelper.init(getBaseContext());
+
 //        publicKey = getString(R.string.nabalny_public_key);
 
         setContentView(R.layout.activity_main);
@@ -64,8 +73,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+                voteService = new VoteResultsService(MainActivity.this);
+                voteService.execute(currentUser);
             }
         });
 
@@ -125,7 +136,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
             ((TextView)findViewById(R.id.textView)).setText(acct.getDisplayName()+", "+getString(R.string.you_vote));
 
+            currentUser = acct.getEmail();
+
             tokenHelper.execute(acct.getAccount());
+
+            voteService.execute(currentUser);
 
         } else {
             // Signed out, show unauthenticated UI. Console.
@@ -162,16 +177,28 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         //TODO Implement onConnectionFailed
     }
 
-    private void refreshChart(){
+    public void refreshChart(VoteStats voteStats){
+
+
+        if(!"".equals(voteStats.getErrors())){
+            showSnackBarMessage(voteStats.getErrors());
+            return;
+        }
+
         PieChart chart = (PieChart) findViewById(R.id.chart);
         List<PieEntry> entries = new ArrayList<>();
-        entries.add(new PieEntry(25, "Yes"));
-        entries.add(new PieEntry(75, "No"));
+        for(int i=0; i<voteStats.getValues().length; ++i) {
+            entries.add(new PieEntry(voteStats.getValues()[i], voteStats.getLabels()[i]));
+        }
         PieDataSet pieDataSet = new PieDataSet(entries, "");
         pieDataSet.setColors(ColorTemplate.COLORFUL_COLORS);
         PieData pieData = new PieData(pieDataSet);
         chart.setData(pieData);
+        chart.setVisibility(View.VISIBLE);
         //chart.setCenterText("Results distribution for " + displayName);
+
+        ((TextView)findViewById(R.id.noVoteText)).setVisibility(View.INVISIBLE);
+
         chart.invalidate();
 
     }
@@ -179,7 +206,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     @Override
     protected void onPostCreate(@Nullable Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        refreshChart();
     }
 
 
@@ -202,8 +228,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     }
 
     //Billing part. Should be refactored, probably
-    static final String ITEM_SKU = "space.greenraven.nabalny.vote";
-//    static final String ITEM_SKU = "android.test.purchased";
+//    static final String ITEM_SKU = "space.greenraven.nabalny.vote";
+    static final String ITEM_SKU = "android.test.purchased";
 
     BillingProcessor bp = null;
 
@@ -211,7 +237,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     @Override
     public void onProductPurchased(@NonNull String productId, @Nullable TransactionDetails details) {
         Log.i("Billing:", "Purchased");
-        bp.consumePurchase(productId);
+        VoteProcessingService vps = new VoteProcessingService(this);
+        vps.execute(tokenHelper.getToken(), productId, details.purchaseInfo.purchaseData.developerPayload);
+        //bp.consumePurchase(productId);
     }
 
     @Override
@@ -240,5 +268,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     }
 
-    //TODO: clean-up all google demo crap from the project
+    public void onVoteSubmissionResult(String result){
+        if(!result.startsWith("Error:")){
+            showSnackBarMessage(getString(R.string.vote_accepted));
+            bp.consumePurchase(result);
+            voteService = new VoteResultsService(this);
+            voteService.execute();
+        } else {
+            showSnackBarMessage(result);
+        }
+    }
 }

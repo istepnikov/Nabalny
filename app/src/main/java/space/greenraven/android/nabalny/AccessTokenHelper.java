@@ -64,6 +64,7 @@ public class AccessTokenHelper extends AsyncTask<Account,Void,String> {
     @Override
     protected void onPostExecute(String token) {
         super.onPostExecute(token);
+        this.token = token;
         Log.i("Token Value: ", token);
     }
 }

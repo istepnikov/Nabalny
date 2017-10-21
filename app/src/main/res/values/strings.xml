@@ -13,4 +13,7 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="nabalny_public_key">MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjIhQ8vDMCxjR/phCRjktuoL7zIHsvmv7CaQ49rJvXgQuKd10qqLKRK3vtMqVIYI/bauTxtJCkUy23GUZLEviW4ql8VexzNZmuPkSuFqjU9dqsBYH+Y4QZP9jhR6qyi6S8rfueXisn96kdnvwDSD9+k+9f+1VlrsKQPeERwt3po1ehVAadTYKt/7cUmW3vLGs4igCOvVxcY01QDBtFuee/IlpbJy28TyVVCIgw1QpuKwHBJfSazHoMbOPNDHCrc9dmcdmcxhAHrELdXS5r5fs0JuXNzjcalRqy21S1Qz/RMh4R2H3opVqwttamemOaxjUUcHCz1v3AWiJx5ZqEBsc+QIDAQAB</string>
 
+    <string name="no_vote_alert">Before viewing results you should vote at least one time</string>
+    <string name="vote_accepted">Your vote has been accepted</string>
+
 </resources>
