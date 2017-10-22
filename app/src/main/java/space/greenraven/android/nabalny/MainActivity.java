@@ -1,5 +1,6 @@
 package space.greenraven.android.nabalny;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -12,10 +13,13 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import com.anjlab.android.iab.v3.BillingProcessor;
 import com.anjlab.android.iab.v3.TransactionDetails;
 import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
@@ -27,7 +31,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Scope;
+import com.google.android.gms.common.api.Status;
 import space.greenraven.android.nabalny.remoting.VoteProcessingService;
 import space.greenraven.android.nabalny.remoting.VoteResultsService;
 import space.greenraven.android.nabalny.remoting.VoteStats;
@@ -49,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     VoteResultsService voteService = new VoteResultsService(this);
 
     String currentUser = "";
+    private Menu menu;
 
     private void showSnackBarMessage(String message){
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -136,6 +143,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
             ((TextView)findViewById(R.id.textView)).setText(acct.getDisplayName()+", "+getString(R.string.you_vote));
 
+            menu.findItem(R.id.action_signout).setEnabled(true);
+
             currentUser = acct.getEmail();
 
             tokenHelper.execute(acct.getAccount());
@@ -152,6 +161,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        this.menu = menu;
+
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
@@ -165,12 +176,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_signout) {
+            signOut();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
+
+    private void signOut() {
+        Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
+                status -> menu.findItem(R.id.action_signout).setEnabled(false));
+    }
+
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
@@ -194,6 +212,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         pieDataSet.setColors(ColorTemplate.COLORFUL_COLORS);
         PieData pieData = new PieData(pieDataSet);
         chart.setData(pieData);
+        Description description = new Description();
+        description.setText("");
+        chart.setDescription(description);
         chart.setVisibility(View.VISIBLE);
         //chart.setCenterText("Results distribution for " + displayName);
 
@@ -214,22 +235,28 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         Log.d("Click","onClick");
         switch (v.getId()){
             case R.id.button_yes:
-
-                Log.i("Button:", "Yes");
-                bp.purchase(this, ITEM_SKU, "Yes");
+//                Log.i("Button:", "Yes");
+//                bp.purchase(this, ITEM_SKU, "Yes");
+                openBuyDialog("YES");
                 break;
             case R.id.button_no:
                 Log.i("Button:", "No");
+                openBuyDialog("NO");
                 break;
             case R.id.button_abstain:
                 Log.i("Button:", "Abstain");
+                openBuyDialog("ABSTAIN");
                 break;
         }
     }
 
     //Billing part. Should be refactored, probably
 //    static final String ITEM_SKU = "space.greenraven.nabalny.vote";
+//    static final String ITEM_SKU10 = "space.greenraven.nabalny.10votes";
+//    static final String ITEM_SKU100 = "space.greenraven.nabalny.100votes";
     static final String ITEM_SKU = "android.test.purchased";
+    static final String ITEM_SKU10 = "android.test.purchased";
+    static final String ITEM_SKU100 = "android.test.purchased";
 
     BillingProcessor bp = null;
 
@@ -273,9 +300,40 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             showSnackBarMessage(getString(R.string.vote_accepted));
             bp.consumePurchase(result);
             voteService = new VoteResultsService(this);
-            voteService.execute();
+            voteService.execute(currentUser);
         } else {
             showSnackBarMessage(result);
         }
+    }
+
+    private void openBuyDialog(String payload){
+        Dialog dialog = new Dialog(this, R.style.Dialog);
+        dialog.setContentView(R.layout.buy_dialog);
+        dialog.setTitle(R.string.select_n_votes_text);
+        dialog.show();
+
+        Button okBtn = (Button) dialog.findViewById(R.id.buyOkBtn);
+        okBtn.setTag(payload);
+
+        dialog.findViewById(R.id.buyCancelBtn).setOnClickListener(v -> {
+            dialog.dismiss();
+        });
+
+        dialog.findViewById(R.id.buyOkBtn).setOnClickListener(v -> {
+            String sku = "";
+            String mPayload = (String) v.getTag();
+            if (((RadioButton) dialog.findViewById(R.id.rbtn1Item)).isChecked()){
+                sku = ITEM_SKU;
+                mPayload += ":"+1;
+            } else if(((RadioButton) dialog.findViewById(R.id.rbtn10Items)).isChecked()) {
+                sku = ITEM_SKU10;
+                mPayload += ":"+10;
+            } else if(((RadioButton) dialog.findViewById(R.id.rbtn100Items)).isChecked()) {
+                sku = ITEM_SKU100;
+                mPayload += ":"+100;
+            }
+            dialog.dismiss();
+            bp.purchase(MainActivity.this, sku, mPayload);
+        });
     }
 }
