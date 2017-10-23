@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">Набальный</string>
+    <string name="action_signout">Выйти</string>
+    <string name="vote_text">Голосовать</string>
+    <string name="yes_string">Да</string>
+    <string name="no_string">Нет</string>
+    <string name="abstain_string">Не знаю</string>
+
+    <string name="unsuccessful_auth_string">Проблема Аутентификации</string>
+    <string name="you_vote">Вы против коррупции? Выберете ваш ваш вариант ответа и голосуйте рублем!</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="nabalny_public_key">MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjIhQ8vDMCxjR/phCRjktuoL7zIHsvmv7CaQ49rJvXgQuKd10qqLKRK3vtMqVIYI/bauTxtJCkUy23GUZLEviW4ql8VexzNZmuPkSuFqjU9dqsBYH+Y4QZP9jhR6qyi6S8rfueXisn96kdnvwDSD9+k+9f+1VlrsKQPeERwt3po1ehVAadTYKt/7cUmW3vLGs4igCOvVxcY01QDBtFuee/IlpbJy28TyVVCIgw1QpuKwHBJfSazHoMbOPNDHCrc9dmcdmcxhAHrELdXS5r5fs0JuXNzjcalRqy21S1Qz/RMh4R2H3opVqwttamemOaxjUUcHCz1v3AWiJx5ZqEBsc+QIDAQAB</string>
+
+    <string name="no_vote_alert">Необходимо хотя бы один раз проголосовать, чтобы посмотреть результаты</string>
+    <string name="vote_accepted">Ваш голос принят</string>
+    <string name="buy_1_item_text">Купить 1 голос</string>
+    <string name="buy_10_item_text">Купить 10 голосов</string>
+    <string name="buy_100_item_text">Купить 100 голосов</string>
+    <string name="select_n_votes_text">Купить голоса</string>
+
+</resources>

@@ -206,7 +206,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         PieChart chart = (PieChart) findViewById(R.id.chart);
         List<PieEntry> entries = new ArrayList<>();
         for(int i=0; i<voteStats.getValues().length; ++i) {
-            entries.add(new PieEntry(voteStats.getValues()[i], voteStats.getLabels()[i]));
+            String label = "";
+            if("YES".equals(voteStats.getLabels()[i])){
+                label = getString(R.string.yes_string);
+            } else if("NO".equals(voteStats.getLabels()[i])){
+                label = getString(R.string.no_string);
+            } else if("ABSTAIN".equals(voteStats.getLabels()[i])){
+                label = getString(R.string.abstain_string);
+            }
+            if(voteStats.getValues()[i]>0) {
+                entries.add(new PieEntry(voteStats.getValues()[i], label));
+            }
         }
         PieDataSet pieDataSet = new PieDataSet(entries, "");
         pieDataSet.setColors(ColorTemplate.COLORFUL_COLORS);
