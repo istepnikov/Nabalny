@@ -7,7 +7,7 @@
     <string name="abstain_string">Не знаю</string>
 
     <string name="unsuccessful_auth_string">Проблема Аутентификации</string>
-    <string name="you_vote">Вы против коррупции? Выберете ваш ваш вариант ответа и голосуйте рублем!</string>
+    <string name="you_vote">Вы против коррупции? Выберете ваш вариант ответа и голосуйте рублем!</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

@@ -21,8 +21,8 @@ android {
         jackOptions {
             enabled true
         }
-        versionCode 6
-        versionName "1.5"
+        versionCode 7
+        versionName "0.1"
     }
     buildTypes {
         release {

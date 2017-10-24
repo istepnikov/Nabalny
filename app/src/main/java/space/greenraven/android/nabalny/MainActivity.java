@@ -31,9 +31,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Scope;
-import com.google.android.gms.common.api.Status;
 import space.greenraven.android.nabalny.remoting.VoteProcessingService;
 import space.greenraven.android.nabalny.remoting.VoteResultsService;
 import space.greenraven.android.nabalny.remoting.VoteStats;
@@ -261,12 +259,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     }
 
     //Billing part. Should be refactored, probably
-//    static final String ITEM_SKU = "space.greenraven.nabalny.vote";
-//    static final String ITEM_SKU10 = "space.greenraven.nabalny.10votes";
-//    static final String ITEM_SKU100 = "space.greenraven.nabalny.100votes";
-    static final String ITEM_SKU = "android.test.purchased";
-    static final String ITEM_SKU10 = "android.test.purchased";
-    static final String ITEM_SKU100 = "android.test.purchased";
+    static final String ITEM_SKU = "space.greenraven.nabalny.vote";
+    static final String ITEM_SKU10 = "space.greenraven.nabalny.10votes";
+    static final String ITEM_SKU100 = "space.greenraven.nabalny.100votes";
+//    static final String ITEM_SKU = "android.test.purchased";
+//    static final String ITEM_SKU10 = "android.test.purchased";
+//    static final String ITEM_SKU100 = "android.test.purchased";
 
     BillingProcessor bp = null;
 
